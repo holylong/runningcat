@@ -32,6 +32,11 @@ set(PROJECT_SOURCES
         mainwindow.cpp
         mainwindow.h
         mainwindow.ui
+        mainwidget.cpp
+        mainwidget.h
+        networker.cpp
+        networker.h
+        app.qrc
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
@@ -52,6 +57,8 @@ else()
 endif()
 
 target_link_libraries(runningcat PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+
+target_link_libraries(runningcat PRIVATE iphlpapi)
 
 set_target_properties(runningcat PROPERTIES
     MACOSX_BUNDLE_GUI_IDENTIFIER my.example.com

@@ -4,6 +4,8 @@
 #include <QLabel>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
+#include <QPainter>
+#include "networker.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -15,43 +17,43 @@ MainWindow::MainWindow(QWidget *parent)
     setFixedWidth(230);
     setWindowFlags(Qt::FramelessWindowHint| Qt::WindowStaysOnTopHint);
 //    setAttribute(Qt::WA_TranslucentBackground);
+//    setStyleSheet("background-image:url(:/styles/background.bmp);border-radius: 5px;");
     setStyleSheet("border-radius: 5px;");
-//    setAttribute(Qt::WA_TranslucentBackground);
 
-    QLabel *labelUpload = new QLabel;
-    labelUpload->setText("上传:100M/s");
-    labelUpload->setStyleSheet("color:black;");
-    labelUpload->setAlignment(Qt::AlignVCenter|Qt::AlignHCenter);
+    _labelUpload = new QLabel;
+    _labelUpload->setText("上传:100M/s");
+    _labelUpload->setStyleSheet("color:black;");
+    _labelUpload->setAlignment(Qt::AlignVCenter|Qt::AlignHCenter);
     QFont ft;
     ft.setPointSize(11);
-    labelUpload->setFont(ft);
+    _labelUpload->setFont(ft);
 
-    QLabel *labelDownload = new QLabel;
-    labelDownload->setText("下载:10M/s");
-    labelDownload->setStyleSheet("color:black;");
-    labelDownload->setAlignment(Qt::AlignVCenter|Qt::AlignHCenter);
-    labelDownload->setFont(ft);
+    _labelDownload = new QLabel;
+    _labelDownload->setText("下载:10M/s");
+    _labelDownload->setStyleSheet("color:black;");
+    _labelDownload->setAlignment(Qt::AlignVCenter|Qt::AlignHCenter);
+    _labelDownload->setFont(ft);
 
     QHBoxLayout* trafficLayout = new QHBoxLayout();
-    trafficLayout->addWidget(labelUpload);
-    trafficLayout->addWidget(labelDownload);
+    trafficLayout->addWidget(_labelUpload);
+    trafficLayout->addWidget(_labelDownload);
     trafficLayout->setMargin(0);
 
-    QLabel *labelCpu = new QLabel;
-    labelCpu->setText("CPU:10 %");
-    labelCpu->setStyleSheet("color:black;");
-    labelCpu->setIndent(11);
-    labelCpu->setFont(ft);
+    _labelCpu = new QLabel;
+    _labelCpu->setText("CPU:10 %");
+    _labelCpu->setStyleSheet("color:black;");
+    _labelCpu->setIndent(11);
+    _labelCpu->setFont(ft);
 
-    QLabel *labelMemory = new QLabel;
-    labelMemory->setText("内存:20 %");
-    labelMemory->setStyleSheet("color:black;");
-    labelMemory->setIndent(11);
-    labelMemory->setFont(ft);
+    _labelMemory = new QLabel;
+    _labelMemory->setText("内存:20 %");
+    _labelMemory->setStyleSheet("color:black;");
+    _labelMemory->setIndent(15);
+    _labelMemory->setFont(ft);
 
     QHBoxLayout* usedLayout = new QHBoxLayout();
-    usedLayout->addWidget(labelCpu);
-    usedLayout->addWidget(labelMemory);
+    usedLayout->addWidget(_labelCpu);
+    usedLayout->addWidget(_labelMemory);
     usedLayout->setMargin(2);
 
 
@@ -60,7 +62,47 @@ MainWindow::MainWindow(QWidget *parent)
     mainLayout->addLayout(usedLayout);
     mainLayout->setMargin(2);
     ui->centralwidget->setLayout(mainLayout);
-    ui->centralwidget->setStyleSheet("image:url(./styles/background.bmp);");
+
+//    ui->centralwidget->setStyleSheet("border-image:url(:/styles/background.bmp);");
+
+    _netWorker = new Networker();
+    _netWorker->start();
+}
+
+/**
+ * @brief MainWindow::SetBackground
+ * set background image
+ */
+void MainWindow::SetBackground()
+{
+#if 0
+    QPixmap pix;
+    pix.load(":/styles/background.bmp");
+    setAutoFillBackground(true);
+    QPalette pal(palette());
+    pal.setBrush(QPalette::Window, QBrush(pix.scaled(size(), Qt::IgnoreAspectRatio, Qt::SmoothTransformation)));
+    setPalette(pal);
+#elif 0
+    QPixmap pix;
+    pix.load(":/styles/background.bmp");
+    QPalette pal;
+    pal.setBrush(QPalette::Window, QBrush(pix));
+    setPalette(pal);
+#elif 1
+    QPixmap pix;
+    pix.load(":/styles/background.bmp");
+    QPalette pal;
+    pal.setBrush(backgroundRole(), QBrush(pix));
+    setPalette(pal);
+#endif
+}
+
+void MainWindow::paintEvent(QPaintEvent *event)
+{
+    QPixmap pix;
+    pix.load(":/styles/background.bmp");
+    QPainter painter(this);
+    painter.drawPixmap(pix.rect(), pix);
 }
 
 void MainWindow::mousePressEvent(QMouseEvent *event)

@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file>styles/background.bmp</file>
+        <file>styles/MainStyle.qss</file>
+    </qresource>
+</RCC>
