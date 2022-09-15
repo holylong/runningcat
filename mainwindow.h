@@ -6,6 +6,8 @@
 
 class QLabel;
 class Networker;
+class QSystemTrayIcon;
+class QMenu;
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -25,6 +27,8 @@ protected:
 
 private:
     void SetBackground();
+    void InitLayout();
+    void InitTrayIcon();
 
 private:
     QPoint _pressPos;
@@ -39,6 +43,9 @@ private:
     QLabel*   _labelDownload;
     QLabel*   _labelCpu;
     QLabel*   _labelMemory;
+
+    QSystemTrayIcon *_trayIcon{nullptr};
+    QMenu           *_trayMenu{nullptr};
 
     Networker* _netWorker;
 };

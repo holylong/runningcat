@@ -5,6 +5,8 @@
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QPainter>
+#include <QSystemTrayIcon>
+#include <QMenu>
 #include "networker.h"
 
 MainWindow::MainWindow(QWidget *parent)
@@ -13,10 +15,24 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
-    setFixedHeight(41);
+    InitLayout();
+    InitTrayIcon();
+
+    _netWorker = new Networker();
+
+    QObject::connect(_netWorker, SIGNAL(ReportNetworker(const QString&, const QString&)), this, SLOT(UpdateNetworker(const QString&, const QString&)));
+
+    _netWorker->start();
+}
+
+void MainWindow::InitLayout()
+{
+   setFixedHeight(41);
     setFixedWidth(230);
-    setWindowFlags(Qt::FramelessWindowHint| Qt::WindowStaysOnTopHint);
-//    setAttribute(Qt::WA_TranslucentBackground);
+    setAttribute(Qt::WA_TranslucentBackground);
+    setStyleSheet("background-color: gray; border-radius:20px;");
+    //不显示状态栏图标
+    setWindowFlags(Qt::FramelessWindowHint| Qt::WindowStaysOnTopHint | Qt::SplashScreen);
 //    setStyleSheet("background-image:url(:/styles/background.bmp);border-radius: 5px;");
     setStyleSheet("border-radius: 5px;");
 
@@ -63,13 +79,24 @@ MainWindow::MainWindow(QWidget *parent)
     mainLayout->setMargin(2);
     ui->centralwidget->setLayout(mainLayout);
 
-//    ui->centralwidget->setStyleSheet("border-image:url(:/styles/background.bmp);");
+    //    ui->centralwidget->setStyleSheet("border-image:url(:/styles/background.bmp);");
+}
 
-    _netWorker = new Networker();
-
-    QObject::connect(_netWorker, SIGNAL(ReportNetworker(const QString&, const QString&)), this, SLOT(UpdateNetworker(const QString&, const QString&)));
-
-    _netWorker->start();
+void MainWindow::InitTrayIcon()
+{
+    _trayIcon = new QSystemTrayIcon(this);
+    _trayIcon->setIcon(QIcon(":/resources/win32.ico"));
+    _trayIcon->setToolTip("RunningCat");
+    _trayMenu = new QMenu(this);
+    _trayMenu->addAction(tr("显示RunningCat窗口"),this,[=](){
+          this->show();
+          this->activateWindow();
+     });
+    _trayMenu->addAction(tr("退出RunningCat"),this,[=](){
+          qApp->quit();
+     });
+    _trayIcon->setContextMenu(_trayMenu);
+    _trayIcon->show();
 }
 
 void MainWindow::UpdateNetworker(const QString& in, const QString& out)

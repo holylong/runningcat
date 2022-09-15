@@ -2,6 +2,8 @@
 #include <QFile>
 #include <QApplication>
 
+#pragma comment(linker, "/subsystem:\"windows\" /entry:\"mainCRTStartup\"" )
+
 void static loadStyleSheet(QString strPath)
 {
     //设置编码格式
