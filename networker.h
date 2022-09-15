@@ -31,8 +31,12 @@ public:
     explicit Networker(QThread *parent = nullptr);
 
     void GetAdapterInfo(std::vector<NetworkConn>& adapters);
-    MIB_IFROW GetConnectIfTable(int connection_index);
 
+#ifdef _WIN32
+    MIB_IFROW GetConnectIfTable(int connection_index);
+#else
+
+#endif //_WIN32
     void QtGetIfTable();
 
 protected:
@@ -51,8 +55,12 @@ signals:
 
 private:
     std::vector<NetworkConn> _conns;
+#ifdef _WIN32
     MIB_IFTABLE*             _ifTable;
     DWORD                    _dwSize{};
+#else
+
+#endif //_WIN32
     uint64_t                 _in_bytes;
     uint64_t                 _out_bytes;
     uint64_t                 _pre_in_bytes;

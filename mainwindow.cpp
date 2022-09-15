@@ -27,14 +27,15 @@ MainWindow::MainWindow(QWidget *parent)
 
 void MainWindow::InitLayout()
 {
-   setFixedHeight(41);
+    setFixedHeight(41);
     setFixedWidth(230);
-    setAttribute(Qt::WA_TranslucentBackground);
-    setStyleSheet("background-color: gray; border-radius:20px;");
+    ui->centralwidget->setStyleSheet("border-radius:20px;");
     //不显示状态栏图标
     setWindowFlags(Qt::FramelessWindowHint| Qt::WindowStaysOnTopHint | Qt::SplashScreen);
-//    setStyleSheet("background-image:url(:/styles/background.bmp);border-radius: 5px;");
-    setStyleSheet("border-radius: 5px;");
+    setAttribute(Qt::WA_TranslucentBackground);
+    // setStyleSheet("background-image:url(:/styles/background.bmp);border-radius: 5px;");
+    // setStyleSheet("background-color: gray; ");
+    // ui->centralwidget->setStyleSheet("border-image:url(:/styles/background.bmp);");
 
     _labelUpload = new QLabel;
     _labelUpload->setText("上传:100M/s");
@@ -78,8 +79,6 @@ void MainWindow::InitLayout()
     mainLayout->addLayout(usedLayout);
     mainLayout->setMargin(2);
     ui->centralwidget->setLayout(mainLayout);
-
-    //    ui->centralwidget->setStyleSheet("border-image:url(:/styles/background.bmp);");
 }
 
 void MainWindow::InitTrayIcon()

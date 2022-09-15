@@ -58,7 +58,11 @@ endif()
 
 target_link_libraries(runningcat PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
 
+if(MSVC)
 target_link_libraries(runningcat PRIVATE iphlpapi)
+else()
+
+endif(MSVC)
 
 set_target_properties(runningcat PROPERTIES
     MACOSX_BUNDLE_GUI_IDENTIFIER my.example.com

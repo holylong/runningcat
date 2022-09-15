@@ -14,6 +14,7 @@
 
 Networker::Networker(QThread *parent) : QThread(parent)
 {
+#ifdef _WIN32
     _ifTable = NULL;
     _dwSize = sizeof(MIB_IFTABLE);
     _ifTable = (MIB_IFTABLE*)malloc(_dwSize);
@@ -25,13 +26,20 @@ Networker::Networker(QThread *parent) : QThread(parent)
         _ifTable = (MIB_IFTABLE*)malloc(_dwSize);
     }
     GetIfTable(_ifTable, &_dwSize, FALSE);
+#else
+
+#endif //_WIN32
     GetAdapterInfo(_conns);
 }
 
 void Networker::run()
 {
     while(1){
+#ifdef _WIN32
         Sleep(2000);
+#else
+        sleep(2);
+#endif 
         QtGetIfTable();
         GetAllTraffic();
     }
@@ -49,7 +57,7 @@ void Networker::QtGetIfTable()
 //        if (_ifTable != nullptr && index >= 0 && index < _ifTable->dwNumEntries)
 //            qDebug() << "["<< __FUNCTION__<< ":" << __LINE__ << "]" <<"index:" << index << " in:" << _ifTable->table[index].dwInOctets;;
 //    }
-
+#ifdef _WIN32
     auto getLfTable = [&]()
     {
        __try
@@ -72,11 +80,15 @@ void Networker::QtGetIfTable()
     };
 
     getLfTable();
+#else
+
+#endif //_WIN32
 //    qDebug() << "["<< __FUNCTION__<< ":" << __LINE__ << "]" << " rtn:" << rtn << " dwsize:" << _dwSize;
 }
 
 void Networker::GetAllTraffic()
 {
+#ifdef _WIN32
     _pre_in_bytes = _in_bytes;
     _pre_out_bytes = _out_bytes;
     _out_bytes = 0;
@@ -94,7 +106,9 @@ void Networker::GetAllTraffic()
     _out_speed = _out_bytes - _pre_out_bytes;
 //    qDebug() <<"["<< __FUNCTION__<< ":" << __LINE__ << "]" <<"conns:" <<
 //               _conns.size() << " in:" << (_in_speed/1000.0f) << " out:" << (_out_speed/1000.0f)  << " counter:" << _count++;
+#else
 
+#endif //_WIN32
     QString in="下载:", out="上传:";
 
     if(_in_speed > 1024*1024*1024){
@@ -120,6 +134,7 @@ void Networker::GetAllTraffic()
     emit ReportNetworker(in, out);
 }
 
+#ifdef _WIN32
 MIB_IFROW Networker::GetConnectIfTable(int connection_index)
 {
     if (connection_index >= 0 && connection_index < static_cast<int>(_conns.size()))
@@ -132,9 +147,13 @@ MIB_IFROW Networker::GetConnectIfTable(int connection_index)
     }
     return MIB_IFROW();
 }
+#else
+
+#endif //_WIN32
 
 void Networker::GetAdapterInfo(std::vector<NetworkConn>& adapters)
 {
+#ifdef _WIN32
     adapters.clear();
     PIP_ADAPTER_INFO pIpAdapterInfo = (PIP_ADAPTER_INFO)new BYTE[sizeof(IP_ADAPTER_INFO)];
     unsigned long stSize = sizeof(IP_ADAPTER_INFO);
@@ -212,4 +231,7 @@ void Networker::GetAdapterInfo(std::vector<NetworkConn>& adapters)
             adapters[i].description_2 = (const char*)_ifTable->table[index].bDescr;
         }
     }
+#else
+
+#endif //_WIN32
 }
