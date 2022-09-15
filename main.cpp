@@ -18,9 +18,10 @@ void static loadStyleSheet(QString strPath)
 
 int main(int argc, char *argv[])
 {
-    QApplication a(argc, argv);
+    QApplication app(argc, argv);
 //    loadStyleSheet(":/styles/MainStyle.qss");
+    app.setWindowIcon(QIcon(":/resources/win32.ico"));
     MainWindow w;
     w.show();
-    return a.exec();
+    return app.exec();
 }

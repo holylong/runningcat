@@ -29,6 +29,9 @@ private:
 private:
     QPoint _pressPos;
 
+private slots:
+    void UpdateNetworker(const QString& in, const QString& out);
+
 private:
     Ui::MainWindow *ui;
 

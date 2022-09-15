@@ -22,7 +22,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     _labelUpload = new QLabel;
     _labelUpload->setText("上传:100M/s");
-    _labelUpload->setStyleSheet("color:black;");
+    _labelUpload->setStyleSheet("color:black; font:10pt;");
     _labelUpload->setAlignment(Qt::AlignVCenter|Qt::AlignHCenter);
     QFont ft;
     ft.setPointSize(11);
@@ -30,7 +30,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     _labelDownload = new QLabel;
     _labelDownload->setText("下载:10M/s");
-    _labelDownload->setStyleSheet("color:black;");
+    _labelDownload->setStyleSheet("color:black; font:10pt;");
     _labelDownload->setAlignment(Qt::AlignVCenter|Qt::AlignHCenter);
     _labelDownload->setFont(ft);
 
@@ -41,13 +41,13 @@ MainWindow::MainWindow(QWidget *parent)
 
     _labelCpu = new QLabel;
     _labelCpu->setText("CPU:10 %");
-    _labelCpu->setStyleSheet("color:black;");
+    _labelCpu->setStyleSheet("color:black; font:10pt;");
     _labelCpu->setIndent(11);
     _labelCpu->setFont(ft);
 
     _labelMemory = new QLabel;
     _labelMemory->setText("内存:20 %");
-    _labelMemory->setStyleSheet("color:black;");
+    _labelMemory->setStyleSheet("color:black; font:10pt;");
     _labelMemory->setIndent(15);
     _labelMemory->setFont(ft);
 
@@ -66,7 +66,16 @@ MainWindow::MainWindow(QWidget *parent)
 //    ui->centralwidget->setStyleSheet("border-image:url(:/styles/background.bmp);");
 
     _netWorker = new Networker();
+
+    QObject::connect(_netWorker, SIGNAL(ReportNetworker(const QString&, const QString&)), this, SLOT(UpdateNetworker(const QString&, const QString&)));
+
     _netWorker->start();
+}
+
+void MainWindow::UpdateNetworker(const QString& in, const QString& out)
+{
+    _labelUpload->setText(out);
+    _labelDownload->setText(in);
 }
 
 /**

@@ -2,5 +2,7 @@
     <qresource prefix="/">
         <file>styles/background.bmp</file>
         <file>styles/MainStyle.qss</file>
+        <file>resources/win32.ico</file>
+        <file>resources/wooqt_logo.png</file>
     </qresource>
 </RCC>

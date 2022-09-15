@@ -43,13 +43,23 @@ protected:
 
 
 signals:
+    void ReportNetworker(const QString& in, const QString& out);
+
+
+
+signals:
 
 private:
     std::vector<NetworkConn> _conns;
-    MIB_IFTABLE* _ifTable;
-    DWORD        _dwSize{};
-    uint64_t          _in_bytes;
-    uint64_t          _out_bytes;
+    MIB_IFTABLE*             _ifTable;
+    DWORD                    _dwSize{};
+    uint64_t                 _in_bytes;
+    uint64_t                 _out_bytes;
+    uint64_t                 _pre_in_bytes;
+    uint64_t                 _pre_out_bytes;
+    uint64_t                 _in_speed;
+    uint64_t                 _out_speed;
+    unsigned short           _count{0};
 };
 
 #endif // NETWORKER_H

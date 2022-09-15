@@ -9,7 +9,7 @@
 #endif
 
 #include <functional>
-
+#include <QString>
 #include <QDebug>
 
 Networker::Networker(QThread *parent) : QThread(parent)
@@ -40,15 +40,15 @@ void Networker::run()
 void Networker::QtGetIfTable()
 {
     int rtn{};
-    rtn = GetIfTable(_ifTable, &_dwSize, FALSE);
-    qDebug() << "rtn:" << rtn << " dwsize:" << _dwSize;
-    int connection_index =  1;
-    if (connection_index >= 0 && connection_index < static_cast<int>(_conns.size()))
-    {
-        int index = _conns[connection_index].index;
-        if (_ifTable != nullptr && index >= 0 && index < _ifTable->dwNumEntries)
-            qDebug() << "index:" << index << " in:" << _ifTable->table[index].dwInOctets;;
-    }
+//    rtn = GetIfTable(_ifTable, &_dwSize, FALSE);
+//    qDebug() <<"["<< __FUNCTION__<< ":" << __LINE__ << "]" << "rtn:" << rtn << " dwsize:" << _dwSize;
+//    int connection_index =  1;
+//    if (connection_index >= 0 && connection_index < static_cast<int>(_conns.size()))
+//    {
+//        int index = _conns[connection_index].index;
+//        if (_ifTable != nullptr && index >= 0 && index < _ifTable->dwNumEntries)
+//            qDebug() << "["<< __FUNCTION__<< ":" << __LINE__ << "]" <<"index:" << index << " in:" << _ifTable->table[index].dwInOctets;;
+//    }
 
     auto getLfTable = [&]()
     {
@@ -72,19 +72,52 @@ void Networker::QtGetIfTable()
     };
 
     getLfTable();
+//    qDebug() << "["<< __FUNCTION__<< ":" << __LINE__ << "]" << " rtn:" << rtn << " dwsize:" << _dwSize;
 }
 
 void Networker::GetAllTraffic()
 {
+    _pre_in_bytes = _in_bytes;
+    _pre_out_bytes = _out_bytes;
     _out_bytes = 0;
     _in_bytes = 0;
+    qDebug() << "[" << __FUNCTION__ << ":" << __LINE__ << "]";
     for (size_t i{}; i < _conns.size(); i++)
     {
         auto table = GetConnectIfTable(i);
         _in_bytes += table.dwInOctets;
         _out_bytes += table.dwOutOctets;
+        qDebug() <<  "[" << "network:" << (const char*)table.bDescr << "]" <<  "_in_bytes:" << table.dwInOctets << " _out_bytes:" <<table.dwOutOctets;
     }
-    qDebug() << "conns:" << _conns.size() << " in:" << _in_bytes << " out:" << _out_bytes;
+
+    _in_speed = _in_bytes - _pre_in_bytes;
+    _out_speed = _out_bytes - _pre_out_bytes;
+//    qDebug() <<"["<< __FUNCTION__<< ":" << __LINE__ << "]" <<"conns:" <<
+//               _conns.size() << " in:" << (_in_speed/1000.0f) << " out:" << (_out_speed/1000.0f)  << " counter:" << _count++;
+
+    QString in="下载:", out="上传:";
+
+    if(_in_speed > 1024*1024*1024){
+        in += QString::number(_in_speed / (1024*1024*1024.0f)/ 2, 'f', 2) + " GB/s";
+    }else if(_in_speed > 1024*1024){
+        in += QString::number(_in_speed / (1024*1024.0f)/ 2, 'f', 2) + " MB/s";
+    }else if(_in_speed > 1024){
+        in += QString::number(_in_speed / 1024.0f/ 2, 'f', 2) + " KB/s";
+    }else{
+        in += QString::number(_in_speed /2) + " B/s";
+    }
+
+    if(_out_speed > 1024*1024*1024){
+        out += QString::number(_out_speed / (1024*1024*1024.0f)/ 2, 'f', 2) + " GB/s";
+    }else if(_out_speed > 1024*1024){
+        out += QString::number(_out_speed / (1024*1024.0f)/ 2, 'f', 2) + " MB/s";
+    }else if(_out_speed > 1024){
+        out += QString::number((_out_speed / 1024.0f) / 2, 'f', 2) + " KB/s";
+    }else{
+        out += QString::number(_out_speed / 2) + "B/s";
+    }
+
+    emit ReportNetworker(in, out);
 }
 
 MIB_IFROW Networker::GetConnectIfTable(int connection_index)
@@ -92,8 +125,10 @@ MIB_IFROW Networker::GetConnectIfTable(int connection_index)
     if (connection_index >= 0 && connection_index < static_cast<int>(_conns.size()))
     {
         int index = _conns[connection_index].index;
-        if (_ifTable != nullptr && index >= 0 && index < _ifTable->dwNumEntries)
+        if (_ifTable != nullptr && index >= 0 && index < _ifTable->dwNumEntries){
+//            qDebug() << "get a table:" << connection_index << " index:" <<index;
             return _ifTable->table[index];
+        }
     }
     return MIB_IFROW();
 }
@@ -122,6 +157,7 @@ void Networker::GetAdapterInfo(std::vector<NetworkConn>& adapters)
             connection.ip_address = pIpAdapterInfo->IpAddressList.IpAddress.String;
             connection.subnet_mask = pIpAdapterInfo->IpAddressList.IpMask.String;
             connection.default_gateway = pIpAdapterInfo->GatewayList.IpAddress.String;
+//            connection.index = pIpAdapterInfo->ComboIndex;
 
             adapters.push_back(connection);
             pIpAdapterInfo = pIpAdapterInfo->Next;
@@ -136,5 +172,44 @@ void Networker::GetAdapterInfo(std::vector<NetworkConn>& adapters)
         NetworkConn connection{};
         connection.description = "no connections";
         adapters.push_back(connection);
+    }
+
+    //check index
+    for(size_t i = 0; i < adapters.size(); i++)
+    {
+        int index = -1;
+        if(!adapters[i].description.isEmpty())
+        {
+            for(size_t j = 0; j < _ifTable->dwNumEntries; j++)
+            {
+                qDebug() << "des:" << adapters[i].description << " des2:" << QString((const char*)_ifTable->table[j].bDescr) << " entries:" << _ifTable->dwNumEntries;
+                if(adapters[i].description == QString((const char*)_ifTable->table[j].bDescr))
+                {
+                    qDebug() << "==> fisrt";
+                    index = j;
+                    break;
+                }
+                if(index == -1)
+                {
+                    int tinx = -1;
+                    QString descr = (const char*)_ifTable->table[j].bDescr;
+                    if(descr.length() > adapters[i].description.length()){
+                        tinx = descr.indexOf(adapters[i].description);
+                    }else{
+                        tinx = adapters[i].description.indexOf(descr);
+                    }
+                    if(tinx != -1){
+                        qDebug() << "==> second tinx:" << tinx;
+                        index = j;
+                        break;
+                    }
+                }
+            }
+
+            adapters[i].index = index;
+            adapters[i].in_bytes = _ifTable->table[index].dwInOctets;
+            adapters[i].out_bytes = _ifTable->table[index].dwOutOctets;
+            adapters[i].description_2 = (const char*)_ifTable->table[index].bDescr;
+        }
     }
 }
