@@ -29,13 +29,9 @@ void MainWindow::InitLayout()
 {
     setFixedHeight(41);
     setFixedWidth(230);
-    ui->centralwidget->setStyleSheet("border-radius:20px;");
     //不显示状态栏图标
     setWindowFlags(Qt::FramelessWindowHint| Qt::WindowStaysOnTopHint | Qt::SplashScreen);
     setAttribute(Qt::WA_TranslucentBackground);
-    // setStyleSheet("background-image:url(:/styles/background.bmp);border-radius: 5px;");
-    // setStyleSheet("background-color: gray; ");
-    // ui->centralwidget->setStyleSheet("border-image:url(:/styles/background.bmp);");
 
     _labelUpload = new QLabel;
     _labelUpload->setText("上传:100M/s");
@@ -79,6 +75,14 @@ void MainWindow::InitLayout()
     mainLayout->addLayout(usedLayout);
     mainLayout->setMargin(2);
     ui->centralwidget->setLayout(mainLayout);
+
+    // ui->centralwidget->setStyleSheet("background-image:url(:/styles/background.bmp); border-radius:5px;");
+    // ui->centralwidget->setStyleSheet(QString::fromUtf8("QMainWindow#MainWindow{border-image:url(:/styles/background.bmp); border-radius:5px;}"));
+    // setStyleSheet(QString::fromUtf8("QMainWindow {border-image:url(:/styles/background.bmp); border-radius:5px;}"));
+    // setStyleSheet("background-image:url(:/styles/background.bmp); border-radius: 20px;");
+    // setStyleSheet("background-color: gray; ");
+    // ui->centralwidget->setStyleSheet("border-image:url(:/styles/background.bmp);");
+    setStyleSheet("QWidget#centralwidget{border-image:url(:/styles/background.bmp); border-radius:5px;}");
 }
 
 void MainWindow::InitTrayIcon()
@@ -134,10 +138,12 @@ void MainWindow::SetBackground()
 
 void MainWindow::paintEvent(QPaintEvent *event)
 {
+#if 0
     QPixmap pix;
     pix.load(":/styles/background.bmp");
     QPainter painter(this);
     painter.drawPixmap(pix.rect(), pix);
+#endif
 }
 
 void MainWindow::mousePressEvent(QMouseEvent *event)

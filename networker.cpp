@@ -128,7 +128,7 @@ void Networker::GetAllTraffic()
     }else if(_out_speed > 1024){
         out += QString::number((_out_speed / 1024.0f) / 2, 'f', 2) + " KB/s";
     }else{
-        out += QString::number(_out_speed / 2) + "B/s";
+        out += QString::number(_out_speed / 2) + " B/s";
     }
 
     emit ReportNetworker(in, out);
