@@ -1,7 +1,10 @@
 #include "mainwindow.h"
 #include <QFile>
 #include <QApplication>
-
+#include <QDebug>
+#ifndef _WIN32
+#include <unistd.h>  //fork
+#endif
 #pragma comment(linker, "/subsystem:\"windows\" /entry:\"mainCRTStartup\"" )
 
 void static loadStyleSheet(QString strPath)
@@ -20,8 +23,9 @@ void static loadStyleSheet(QString strPath)
 
 int main(int argc, char *argv[])
 {
+    qDebug() << "running cat start success";
     QApplication app(argc, argv);
-//    loadStyleSheet(":/styles/MainStyle.qss");
+    // loadStyleSheet(":/styles/MainStyle.qss");
     app.setWindowIcon(QIcon(":/resources/win32.ico"));
     MainWindow w;
     w.show();
