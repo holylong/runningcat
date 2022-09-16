@@ -6,7 +6,7 @@
 #include <IPTypes.h>
 #include <iphlpapi.h>
 #else
-
+#include <QVector>
 #endif
 
 #include <QThread>
@@ -44,14 +44,12 @@ protected:
 
     void GetAllTraffic();
 
+    void process_line(const QString& line);
+
 
 
 signals:
     void ReportNetworker(const QString& in, const QString& out);
-
-
-
-signals:
 
 private:
     std::vector<NetworkConn> _conns;
@@ -59,7 +57,8 @@ private:
     MIB_IFTABLE*             _ifTable;
     DWORD                    _dwSize{};
 #else
-
+    QString                  _netPath{"/proc/net/dev"};
+    QVector<QString>         _arrLines;
 #endif //_WIN32
     uint64_t                 _in_bytes;
     uint64_t                 _out_bytes;
