@@ -1,2 +1,2 @@
 # RunningCat
-cpu/network/memory monitor for windows
+cpu/network/memory monitor for windows/linux
