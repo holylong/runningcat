@@ -13,6 +13,7 @@
 #include <functional>
 #include <QString>
 #include <QDebug>
+#include <stringutil.h>
 
 Networker::Networker(QThread *parent) : QThread(parent)
 {
@@ -50,15 +51,6 @@ void Networker::run()
 void Networker::QtGetIfTable()
 {
     int rtn{};
-//    rtn = GetIfTable(_ifTable, &_dwSize, FALSE);
-//    qDebug() <<"["<< __FUNCTION__<< ":" << __LINE__ << "]" << "rtn:" << rtn << " dwsize:" << _dwSize;
-//    int connection_index =  1;
-//    if (connection_index >= 0 && connection_index < static_cast<int>(_conns.size()))
-//    {
-//        int index = _conns[connection_index].index;
-//        if (_ifTable != nullptr && index >= 0 && index < _ifTable->dwNumEntries)
-//            qDebug() << "["<< __FUNCTION__<< ":" << __LINE__ << "]" <<"index:" << index << " in:" << _ifTable->table[index].dwInOctets;;
-//    }
 #ifdef _WIN32
     auto getLfTable = [&]()
     {
@@ -84,37 +76,30 @@ void Networker::QtGetIfTable()
     getLfTable();
 #else
     //read /proc/net/dev
-//    std::ifstream ifs;
-//    ifs.open("/proc/net/dev", std::ios::in);
     _conns.clear();
     QFile file(_netPath);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
         return;
 
     QTextStream in(&file);
-    //proc file not ok
-//    while (!in.atEnd()) {
-//        qDebug() << "aaa";
-//        QString line = in.readLine();
-//        //process_line(line);
-//        qDebug() <<"["<< __FUNCTION__<< ":" << __LINE__ << "]" << " process line:" << line;
-//    }
     QString line = in.readLine();
     while(!line.isNull()){
-//        qDebug() <<"["<< __FUNCTION__<< ":" << __LINE__ << "]" << " process line:" << line;
         process_line(line);
         line = in.readLine();
     }
     file.close();
 #endif //_WIN32
-//    qDebug() << "["<< __FUNCTION__<< ":" << __LINE__ << "]" << " rtn:" << rtn << " dwsize:" << _dwSize;
 }
 
 void Networker::process_line(const QString& line)
 {
     QStringList items = line.split(" ");
     items.removeAll("");
-    if(items.at(0) == "eno1:"){
+#if 1
+    if(items.at(0) == "eno1:" 
+    || items.at(0) == "eth1:" 
+    || feiker::StringUtil::StringFuzzySearch(items.at(0), "eno")
+    || feiker::StringUtil::StringFuzzySearch(items.at(0), "eth")){
         //recv index 1
         NetworkConn conn;
         conn.description = items.at(0);
@@ -124,6 +109,15 @@ void Networker::process_line(const QString& line)
 
         _conns.push_back(conn);
     }
+#else
+    NetworkConn conn;
+    conn.description = items.at(0);
+    conn.in_bytes = items.at(1).toULong();
+    //send index 9
+    conn.out_bytes = items.at(9).toULong();
+
+    _conns.push_back(conn);
+#endif
 }
 
 void Networker::GetAllTraffic()
@@ -141,16 +135,20 @@ void Networker::GetAllTraffic()
         _out_bytes += table.dwOutOctets;
         qDebug() <<  "[" << "network:" << (const char*)table.bDescr << "]" <<  "_in_bytes:" << table.dwInOctets << " _out_bytes:" <<table.dwOutOctets;
     }
+    _in_speed = _in_bytes - _pre_in_bytes;
+    _out_speed = _out_bytes - _pre_out_bytes;
 #else
     for (size_t i{}; i < _conns.size(); i++)
     {
         _in_bytes += _conns[i].in_bytes;
         _out_bytes += _conns[i].out_bytes;
-        qDebug() << "in bytes:" << _in_bytes << " out bytes:" << _out_bytes;
     }
-#endif //_WIN32
+    // _in_speed = (_in_bytes - _pre_in_bytes)/2;
+    // _out_speed = (_out_bytes - _pre_out_bytes)/2;
     _in_speed = _in_bytes - _pre_in_bytes;
     _out_speed = _out_bytes - _pre_out_bytes;
+#endif //_WIN32
+
 //    qDebug() <<"["<< __FUNCTION__<< ":" << __LINE__ << "]" <<"conns:" <<
 //               _conns.size() << " in:" << (_in_speed/1000.0f) << " out:" << (_out_speed/1000.0f)  << " counter:" << _count++;
     QString in="下载:", out="上传:";
