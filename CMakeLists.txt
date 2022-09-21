@@ -36,7 +36,9 @@ set(PROJECT_SOURCES
         mainwidget.h
         networker.cpp
         networker.h
+        systemutil.h
         app.qrc
+        app_win32.rc
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)

@@ -7,6 +7,8 @@
 #endif
 #pragma comment(linker, "/subsystem:\"windows\" /entry:\"mainCRTStartup\"" )
 
+#include <systemutil.h>
+
 void static loadStyleSheet(QString strPath)
 {
     //设置编码格式
@@ -27,6 +29,8 @@ int main(int argc, char *argv[])
     QApplication app(argc, argv);
     // loadStyleSheet(":/styles/MainStyle.qss");
     app.setWindowIcon(QIcon(":/resources/win32.ico"));
+    // auto restart
+    feiker::setProcessAutoRun(app.applicationFilePath(), true);
     MainWindow w;
     w.show();
     return app.exec();
