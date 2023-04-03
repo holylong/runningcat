@@ -127,13 +127,17 @@ void Networker::GetAllTraffic()
     _out_bytes = 0;
     _in_bytes = 0;
 #ifdef _WIN32
+#ifdef MS_DEBUG
     qDebug() << "[" << __FUNCTION__ << ":" << __LINE__ << "]";
+#endif //MS_DEBUG
     for (size_t i{}; i < _conns.size(); i++)
     {
         auto table = GetConnectIfTable(i);
         _in_bytes += table.dwInOctets;
         _out_bytes += table.dwOutOctets;
+        #ifdef MS_DEBUG
         qDebug() <<  "[" << "network:" << (const char*)table.bDescr << "]" <<  "_in_bytes:" << table.dwInOctets << " _out_bytes:" <<table.dwOutOctets;
+        #endif //MS_DEBUG
     }
     _in_speed = _in_bytes - _pre_in_bytes;
     _out_speed = _out_bytes - _pre_out_bytes;

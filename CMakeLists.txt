@@ -29,14 +29,22 @@ find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Widgets REQUIRED)
 
 set(PROJECT_SOURCES
         main.cpp
-        mainwindow.cpp
-        mainwindow.h
-        mainwindow.ui
-        mainwidget.cpp
-        mainwidget.h
-        networker.cpp
-        networker.h
+        mainwindow.cpp mainwindow.h mainwindow.ui
+
+        mainwidget.cpp mainwidget.h
+
+        networker.cpp networker.h
+
         systemutil.h
+
+        frameplayer.cpp frameplayer.h
+
+        framethread.cpp  framethread.h
+
+        fileutil.h
+        
+        cpumemo.cpp cpumemo.h
+
         app.qrc
         app_win32.rc
 )

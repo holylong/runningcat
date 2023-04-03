@@ -4,5 +4,10 @@
         <file>styles/MainStyle.qss</file>
         <file>resources/win32.ico</file>
         <file>resources/wooqt_logo.png</file>
+        <file>resources/frames/cat-running-0.svg</file>
+        <file>resources/frames/cat-running-1.svg</file>
+        <file>resources/frames/cat-running-2.svg</file>
+        <file>resources/frames/cat-running-3.svg</file>
+        <file>resources/frames/cat-running-4.svg</file>
     </qresource>
 </RCC>

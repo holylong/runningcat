@@ -4,10 +4,16 @@
 #include <QLabel>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
+#include <QGridLayout>
+#include <QFormLayout>
 #include <QPainter>
 #include <QSystemTrayIcon>
 #include <QMenu>
+#include <QDebug>
+
 #include "networker.h"
+#include "frameplayer.h"
+#include "framethread.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -21,14 +27,21 @@ MainWindow::MainWindow(QWidget *parent)
     _netWorker = new Networker();
 
     QObject::connect(_netWorker, SIGNAL(ReportNetworker(const QString&, const QString&)), this, SLOT(UpdateNetworker(const QString&, const QString&)));
+    QObject::connect(_catWidget, SIGNAL(ReportCpuUsage(const QString&)), this, SLOT(UpdateCpuUsage(const QString&)));
 
     _netWorker->start();
 }
 
+void MainWindow::UpdateCpuUsage(const QString& msg)
+{
+    // qDebug() << "UpdateCpuUsage:" << msg;
+    _labelCpu->setText(msg);
+}
+
 void MainWindow::InitLayout()
 {
-    setFixedHeight(41);
-    setFixedWidth(230);
+    setFixedHeight(50);
+    setFixedWidth(271);
     //不显示状态栏图标
     setWindowFlags(Qt::FramelessWindowHint| Qt::WindowStaysOnTopHint | Qt::SplashScreen);
     setAttribute(Qt::WA_TranslucentBackground);
@@ -36,44 +49,52 @@ void MainWindow::InitLayout()
     _labelUpload = new QLabel;
     _labelUpload->setText("上传:100M/s");
     _labelUpload->setStyleSheet("color:black; font:10pt;");
-    _labelUpload->setAlignment(Qt::AlignVCenter|Qt::AlignHCenter);
+    _labelUpload->setAlignment(Qt::AlignLeft);
     QFont ft;
     ft.setPointSize(11);
+    ft.setBold(true);
+    ft.setWeight(75);
     _labelUpload->setFont(ft);
 
     _labelDownload = new QLabel;
     _labelDownload->setText("下载:10M/s");
     _labelDownload->setStyleSheet("color:black; font:10pt;");
-    _labelDownload->setAlignment(Qt::AlignVCenter|Qt::AlignHCenter);
+    _labelDownload->setAlignment(Qt::AlignLeft);
     _labelDownload->setFont(ft);
 
-    QHBoxLayout* trafficLayout = new QHBoxLayout();
-    trafficLayout->addWidget(_labelUpload);
-    trafficLayout->addWidget(_labelDownload);
-    trafficLayout->setMargin(0);
+    QGridLayout* gridLayout = new QGridLayout();
+    gridLayout->addWidget(_labelUpload, 0, 0);
+    gridLayout->addWidget(_labelDownload, 0, 1);
 
     _labelCpu = new QLabel;
     _labelCpu->setText("CPU:10 %");
     _labelCpu->setStyleSheet("color:black; font:10pt;");
-    _labelCpu->setIndent(11);
+    _labelCpu->setAlignment(Qt::AlignLeft);
     _labelCpu->setFont(ft);
 
     _labelMemory = new QLabel;
     _labelMemory->setText("内存:20 %");
     _labelMemory->setStyleSheet("color:black; font:10pt;");
-    _labelMemory->setIndent(15);
+    _labelMemory->setAlignment(Qt::AlignLeft);
     _labelMemory->setFont(ft);
 
-    QHBoxLayout* usedLayout = new QHBoxLayout();
-    usedLayout->addWidget(_labelCpu);
-    usedLayout->addWidget(_labelMemory);
-    usedLayout->setMargin(2);
+    gridLayout->addWidget(_labelCpu, 1, 0);
+    gridLayout->addWidget(_labelMemory, 1, 1);
 
+    _catWidget = new FramePlayerWidget(this);
+    _catWidget->SetFrameCount(5);
+    _catWidget->SetFrameSize(50, 45);
+    _catWidget->LoadFrame(":/resources/frames");
 
-    QVBoxLayout* mainLayout = new QVBoxLayout();
-    mainLayout->addLayout(trafficLayout);
-    mainLayout->addLayout(usedLayout);
-    mainLayout->setMargin(2);
+    QHBoxLayout* mainLayout = new QHBoxLayout();
+    QVBoxLayout* vLayout = new QVBoxLayout();
+    vLayout->addWidget(_catWidget);
+    mainLayout->addLayout(vLayout);
+    mainLayout->addLayout(gridLayout);
+
+//    ui->centralwidget->setStyleSheet("background-color: gray; ");
+    ui->centralwidget->setFixedHeight(50);
+    ui->centralwidget->setFixedWidth(271);
     ui->centralwidget->setLayout(mainLayout);
 
     // ui->centralwidget->setStyleSheet("background-image:url(:/styles/background.bmp); border-radius:5px;");
@@ -96,7 +117,9 @@ void MainWindow::InitTrayIcon()
           this->activateWindow();
      });
     _trayMenu->addAction(tr("退出RunningCat"),this,[=](){
-          qApp->quit();
+        qDebug() << "quit";
+        QWidget::close();
+        //   qApp->quit();
      });
     _trayIcon->setContextMenu(_trayMenu);
     _trayIcon->show();
@@ -162,6 +185,14 @@ void MainWindow::mouseMoveEvent(QMouseEvent *event)
 
 MainWindow::~MainWindow()
 {
+    qDebug() << "MainWindow::~MainWindow()";
     delete ui;
 }
 
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+    qDebug() << "MainWindow::CloseEvent";
+    _catWidget->Stop();
+    qDebug() << "MainWindow::CloseEvent 1";
+    qApp->quit();
+}

@@ -8,6 +8,7 @@ class QLabel;
 class Networker;
 class QSystemTrayIcon;
 class QMenu;
+class FramePlayerWidget;
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -24,6 +25,7 @@ protected:
     void mousePressEvent(QMouseEvent *event);
     void mouseMoveEvent(QMouseEvent *event);
     void paintEvent(QPaintEvent *event);
+    void closeEvent(QCloseEvent *event);
 
 private:
     void SetBackground();
@@ -35,6 +37,7 @@ private:
 
 private slots:
     void UpdateNetworker(const QString& in, const QString& out);
+    void UpdateCpuUsage(const QString& msg);
 
 private:
     Ui::MainWindow *ui;
@@ -48,5 +51,7 @@ private:
     QMenu           *_trayMenu{nullptr};
 
     Networker* _netWorker;
+
+    FramePlayerWidget* _catWidget;
 };
 #endif // MAINWINDOW_H
